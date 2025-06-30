@@ -13,3 +13,10 @@ def format_tour(tour):
 
 def print_tour(tour):
     print(format_tour(tour))
+
+def total_distance(tour, dist): 
+    total = 0
+    N = len(tour) 
+    for i in range(N):
+        total += dist[tour[i]][tour[(i + 1) % N]]
+    return total
