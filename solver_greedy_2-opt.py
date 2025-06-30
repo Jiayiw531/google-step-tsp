@@ -3,6 +3,7 @@
 import sys
 import math
 import os
+import random
 
 from common import print_tour, read_input, total_distance
 
@@ -28,6 +29,14 @@ def swap(tour, index1, index2):
 
 
 def solve(cities):
+    # Shuffle cities except for the first and last (indices 0 and -1)
+    print(cities)
+    if len(cities) > 2:
+        middle = cities[1:-1]
+        random.shuffle(middle)
+        cities[1:-1] = middle
+    print(cities)
+    
     N = len(cities)
 
     dist = [[0] * N for i in range(N)]
@@ -47,6 +56,7 @@ def solve(cities):
         current_city = next_city
 
     shortest_tour = list(tour)
+    curr_total_distance = total_distance(shortest_tour, dist)
     improving = True
 
     # end the loop when tour is not improving
@@ -54,17 +64,32 @@ def solve(cities):
         improving = False
         for i in range(len(shortest_tour) - 1): # i is index of the starting point, so ends at the second last city
             for j in range(i + 1, len(shortest_tour)): # j is the end point index, starts behind i by 1, ends at last city in tour
-                temp_tour = swap(shortest_tour, i, j)
+                
+                # make sure i and j are not adjacent / the same
+                if j == i + 1 or (i == 0 and j == N - 1): 
+                    continue
+                
+                city_i = shortest_tour[i]
+                city_i_next = shortest_tour[(i + 1) % N]
+                city_j = shortest_tour[j]
+                city_j_next = shortest_tour[(j + 1) % N]
 
-                # check if swapped temp_tour produces a shorter path
-                # if is improving, break current loop and restart the loop to look for even better paths
-                if total_distance(temp_tour, dist) < total_distance(shortest_tour, dist): 
-                    shortest_tour = temp_tour
+                # if the new way of connection : i to j and i_nxt to j_nxt
+                # results in a smaller total distance (diff < 0), perform the swap
+                diff = (dist[city_i][city_j] + dist[city_i_next][city_j_next]) - \
+                       (dist[city_i][city_i_next] + dist[city_j][city_j_next])
+                if diff < 0: 
+                    # replace the previous segment between i+1 and j+1 to the reversed segment between i and j
+                    shortest_tour[i+1 : j+1] = shortest_tour[j : i : -1]
+                    curr_total_distance += diff
                     improving = True
                     break
             if improving: 
                 break
+
     print("shortest_tour total distance: ", total_distance(shortest_tour, dist))
+    print("verifier output:", sum(distance(cities[shortest_tour[i]], cities[shortest_tour[(i + 1) % N]])
+                              for i in range(N)))
     return shortest_tour
 
 def write_output(tour, output_filename): 
