@@ -29,14 +29,6 @@ def swap(tour, index1, index2):
 
 
 def solve(cities):
-    # Shuffle cities except for the first and last (indices 0 and -1)
-    print(cities)
-    if len(cities) > 2:
-        middle = cities[1:-1]
-        random.shuffle(middle)
-        cities[1:-1] = middle
-    print(cities)
-    
     N = len(cities)
 
     dist = [[0] * N for i in range(N)]
@@ -49,8 +41,8 @@ def solve(cities):
     tour = [current_city]
 
     while unvisited_cities:
-        next_city = min(unvisited_cities,
-                        key=lambda city: dist[current_city][city])
+        
+        next_city = random.choice(list(unvisited_cities)) # randomly select a city to visit next
         unvisited_cities.remove(next_city)
         tour.append(next_city)
         current_city = next_city

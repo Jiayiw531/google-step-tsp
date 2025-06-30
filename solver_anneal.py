@@ -26,36 +26,40 @@ def swap(tour, index1, index2):
     
     return new_tour
 
-
-
 def solve(cities):
-    # Shuffle cities except for the first and last (indices 0 and -1)
-    print(cities)
-    if len(cities) > 2:
-        middle = cities[1:-1]
-        random.shuffle(middle)
-        cities[1:-1] = middle
-    print(cities)
-    
     N = len(cities)
+    temp = 1
+    cooling_factor = 0.98
 
     dist = [[0] * N for i in range(N)]
     for i in range(N):
         for j in range(i, N):
             dist[i][j] = dist[j][i] = distance(cities[i], cities[j])
 
-    current_city = 0
-    unvisited_cities = set(range(1, N))
-    tour = [current_city]
-
-    while unvisited_cities:
-        next_city = min(unvisited_cities,
-                        key=lambda city: dist[current_city][city])
-        unvisited_cities.remove(next_city)
-        tour.append(next_city)
-        current_city = next_city
+    # start with a random tour
+    tour = [0] + random.sample(range(1, N), N - 1)
 
     shortest_tour = list(tour)
+    
+    while temp > 0.001: 
+        # randomly select two indices to swap
+        index1 = random.randint(0, N - 1)
+        index2 = random.randint(0, N - 1)
+        while index1 == index2:  # ensure indices are different
+            index2 = random.randint(0, N - 1)
+        # swap the two indices in the tour
+        tour = swap(list(range(N)), index1, index2)
+        # calculate the total distance of the new tour
+        curr_total_distance = total_distance(tour, [[distance(cities[i], cities[j]) for j in range(N)] for i in range(N)])
+        # calculate the difference in distance
+        diff = curr_total_distance - total_distance(shortest_tour, dist)
+        # if the new tour is shorter, or if we accept a longer tour based on temperature
+        if diff < 0 or random.random() < math.exp(-diff / temp):
+            shortest_tour = tour
+            print("New tour found with distance:", curr_total_distance)
+        # cool down the temperature
+        temp *= cooling_factor
+
     curr_total_distance = total_distance(shortest_tour, dist)
     improving = True
 
@@ -108,7 +112,7 @@ if __name__ == '__main__':
     input_prefix = os.path.splitext(base_name)[0]
 
     assert('_' in input_prefix)
-    output_filename = "output_" + input_prefix.split("_")[-1] + ".csv"
+    output_filename = "anneal_output_" + input_prefix.split("_")[-1] + ".csv"
 
     write_output(tour, output_filename)
 

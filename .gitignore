@@ -2,3 +2,5 @@
 .python-version
 __py_cache__/*
 /archive
+greedy_2-opt_shuffle_output_2.csv
+*.pyc
